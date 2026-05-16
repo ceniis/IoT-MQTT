@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "IoT-MQTT": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}
