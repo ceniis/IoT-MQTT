@@ -1,73 +1,55 @@
 ﻿using MQTTnet;
-using System.Buffers;
-using System.Text;
 
 
 namespace MqttConnectionApp
 {
     class Program
     {
-        private static IMqttClient _mqttClient;
-        private static MqttClientOptions _mqttOptions;
-
         static async Task Main(string[] args)
         {
-            var clientFactory = new MqttClientFactory();
-            _mqttClient = clientFactory.CreateMqttClient();
+            var mqttService = new MqttService();
+            await mqttService.ConnectAsync();
 
-            // Configure connection parameters
-            _mqttOptions = new MqttClientOptionsBuilder()
-                .WithTcpServer("broker.hivemq.com", 1883)
-                .WithClientId($"CSharp_Client_{Guid.NewGuid()}")
-                .WithCleanSession()
-                .Build();
-
-            _mqttClient.ConnectedAsync += OnConnectedAsync;
-            _mqttClient.DisconnectedAsync += OnDisconnectedAsync;
-            _mqttClient.ApplicationMessageReceivedAsync += OnMessageReceivedAsync;
-
-            try
+            while (true)
             {
-                Console.WriteLine("Connecting to MQTT broker...");
-                await _mqttClient.ConnectAsync(_mqttOptions, CancellationToken.None);
-
-                Console.WriteLine("Connected! Press Enter to exit");
-                Console.ReadLine();
-
-                await _mqttClient.DisconnectAsync();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Connection failed: {ex.Message}");
-            }
-        }
-
-        private static async Task OnConnectedAsync(MqttClientConnectedEventArgs e)
-        {
-            Console.WriteLine("Successfully connected to the broker!");
-            //
-            var topic = "test/topic/csharp";
-
-            var subscribeOptions = new MqttClientSubscribeOptionsBuilder()
-                .WithTopicFilter(f => f.WithTopic(topic))
-                .Build();
-
-            await _mqttClient.SubscribeAsync(subscribeOptions, CancellationToken.None);
-            Console.WriteLine($"Subscribed to topic: {topic}");
-        }
-
-        private static Task OnDisconnectedAsync(MqttClientDisconnectedEventArgs e)
-        {
-            Console.WriteLine("Disconnected from the broker.");
-            return Task.CompletedTask;
-        }
-
-        private static Task OnMessageReceivedAsync(MqttApplicationMessageReceivedEventArgs e)
-        {
-            var payload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload.ToArray());
-
-            Console.WriteLine($"\n[Received] Topic: {e.ApplicationMessage.Topic} | Payload: {payload}");
-            return Task.CompletedTask;
+                Console.WriteLine("\n1 - Create new Topic\t 2 - Subscribe\t 3 - Publish\t 4 - Unsubscribe\t 0 - Exit");
+                int choice = int.Parse(Console.ReadLine());
+                switch (choice)
+                {
+                    case 1:
+                        Console.WriteLine("Enter the topic name:");
+                        var topicName = Console.ReadLine();
+                        // func call
+                        Console.WriteLine($"Topic '{topicName}' is created");
+                        break;
+                    case 2:
+                        Console.WriteLine("Enter the topic name:");
+                        topicName = Console.ReadLine();
+                        // func call
+                        Console.WriteLine($"Subscribed to '{topicName}'");
+                        break;
+                    case 3:
+                        Console.WriteLine("Enter the topic name:");
+                        topicName = Console.ReadLine();
+                        Console.WriteLine("Enter the message:");
+                        var message = Console.ReadLine();
+                        // func call
+                        Console.WriteLine($"Message '{message}'is published to '{topicName}'");
+                        break;
+                    case 4: 
+                        Console.WriteLine("Enter the topic name:");
+                        topicName = Console.ReadLine();
+                        // func call
+                        Console.WriteLine($"Unsubscribed from '{topicName}'");
+                        break;
+                    case 0:
+                        Console.WriteLine("Exiting...");
+                        return;
+                    default:
+                        Console.WriteLine("Invalid choice. Please try again.");
+                        break;
+                }
+            }   
         }
     }
 }
